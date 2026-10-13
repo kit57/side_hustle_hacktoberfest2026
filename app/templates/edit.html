@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Review · {{ menu.restaurant_name }}{% endblock %}
+{% block content %}
+<header>
+  <h1>{{ menu.restaurant_name }}</h1>
+  <p class="lead">Check every dish. Translations and allergens are suggestions from the model; you are responsible for what is published.</p>
+  <p class="hint">Bookmark this page: this link is the only way back to editing this menu.</p>
+</header>
+
+{% if notice == "published" %}<p class="notice ok">Published.</p>
+{% elif notice == "unconfirmed" %}<p class="notice error">Saved, but not published: {{ unconfirmed }} dish(es) still need confirming.</p>
+{% elif notice == "saved" %}<p class="notice ok">Saved.</p>{% endif %}
+
+{% if menu.published %}
+<section class="card publish">
+  <img src="/m/{{ menu.slug }}/qr.svg" alt="QR code for the public menu" width="160" height="160">
+  <div>
+    <p>Public menu: <a href="/m/{{ menu.slug }}">{{ public_url }}</a></p>
+    <p class="hint">Print the QR code and put it on the tables.</p>
+  </div>
+</section>
+{% endif %}
+
+<form method="post">
+  {% for dish in menu.dishes %}
+  {% if dish.section and (loop.first or dish.section != menu.dishes[loop.index0 - 1].section) %}
+  <h2>{{ dish.section }}</h2>
+  {% endif %}
+  <fieldset class="card dish">
+    <legend>{{ dish.name }}{% if dish.price %} · {{ dish.price }} €{% endif %}</legend>
+    {% if not dish.suggested.get("translations") %}
+    <p class="notice error">The model gave no usable suggestion for this dish. Fill it in by hand.</p>
+    {% endif %}
+    {% for lang in TARGET_LANGS %}
+    <label for="{{ lang }}_{{ dish.id }}">{{ LANG_NAMES[lang] }}</label>
+    <input id="{{ lang }}_{{ dish.id }}" name="{{ lang }}_{{ dish.id }}" value="{{ dish.translations.get(lang, '') }}" maxlength="300">
+    {% endfor %}
+    <p class="group-label">Allergens</p>
+    <div class="allergens">
+      {% for id, labels in ALLERGENS.items() %}
+      <label class="check"><input type="checkbox" name="allergens_{{ dish.id }}" value="{{ id }}" {% if id in dish.allergens %}checked{% endif %}> {{ labels.es }}</label>
+      {% endfor %}
+    </div>
+    <label class="check confirm"><input type="checkbox" name="confirmed_{{ dish.id }}" {% if dish.confirmed %}checked{% endif %}> I have checked this dish</label>
+  </fieldset>
+  {% endfor %}
+
+  <div class="actions">
+    <button type="submit" name="action" value="save" class="secondary">Save</button>
+    <button type="submit" name="action" value="publish">Save and publish</button>
+    {% if menu.published %}<button type="submit" name="action" value="unpublish" class="secondary">Unpublish</button>{% endif %}
+  </div>
+  {% if glossary_enabled %}<p class="hint">Corrections you confirm are remembered for this restaurant's next menu.</p>{% endif %}
+</form>
+{% endblock %}

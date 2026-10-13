@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block lang %}{{ lang }}{% endblock %}
+{% block title %}{{ menu.restaurant_name }}{% endblock %}
+{% block content %}
+<header>
+  <h1>{{ menu.restaurant_name }}</h1>
+  <nav class="langs" aria-label="Language">
+    {% for code, name in LANG_NAMES.items() %}
+    <a href="?lang={{ code }}" {% if code == lang %}aria-current="true"{% endif %}>{{ name }}</a>
+    {% endfor %}
+  </nav>
+</header>
+
+{% for dish in menu.dishes %}
+{% if dish.section and (loop.first or dish.section != menu.dishes[loop.index0 - 1].section) %}
+<h2>{{ dish.section }}</h2>
+{% endif %}
+<article class="item">
+  <div class="item-head">
+    <h3>{{ dish.name if lang == SOURCE_LANG else dish.translations.get(lang) or dish.name }}</h3>
+    {% if dish.price %}<span class="price">{{ dish.price }} €</span>{% endif %}
+  </div>
+  {% if lang != SOURCE_LANG and dish.translations.get(lang) %}<p class="original">{{ dish.name }}</p>{% endif %}
+  {% if dish.allergens %}
+  <ul class="tags">
+    {% for id in dish.allergens %}<li>{{ ALLERGENS[id][lang] }}</li>{% endfor %}
+  </ul>
+  {% endif %}
+</article>
+{% endfor %}
+
+<footer class="hint">Allergen information is provided by the restaurant. If you have an allergy, tell the staff before ordering.</footer>
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block content %}
+<header>
+  <h1>CartaClara</h1>
+  <p class="lead">Paste your menu in Spanish. Get a QR menu in English, French and German, with allergens you confirm before anyone sees them.</p>
+</header>
+
+{% if error %}<p class="notice error">{{ error }}</p>{% endif %}
+
+<form method="post" action="/menus" class="card">
+  <label for="restaurant_name">Restaurant name</label>
+  <input id="restaurant_name" name="restaurant_name" required maxlength="200" placeholder="Casa Lola">
+
+  <label for="menu_text">Menu</label>
+  <p class="hint">One dish per line, price at the end if you want it shown. Section titles in CAPITALS.</p>
+  <textarea id="menu_text" name="menu_text" rows="14" required placeholder="ENTRANTES
+Salmorejo cordobés 6,50
+Croquetas de jamón 8
+PRINCIPALES
+Pulpo á feira 16,90"></textarea>
+
+  <details>
+    <summary>Updating a menu you made before?</summary>
+    <label for="previous_token">Edit code of the previous menu</label>
+    <p class="hint">The part after /edit/ in your edit link. Your earlier corrections are reused.</p>
+    <input id="previous_token" name="previous_token" autocomplete="off">
+  </details>
+
+  <button type="submit">Translate menu</button>
+  <p class="hint">Model backend: {{ backend }}</p>
+</form>
+{% endblock %}
